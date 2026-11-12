@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#2f6038">
+    <title>Student Home | Campus Research</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="student-app">
+      <header class="top-bar">
+        <button class="menu-button" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="explore-menu">
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M5 7h14M5 12h14M5 17h14"></path>
+          </svg>
+        </button>
+        <label class="search-control">
+          <span class="visually-hidden">Search</span>
+          <input type="search" placeholder="SEARCH" autocomplete="off">
+        </label>
+      </header>
+
+      <div class="menu-backdrop" hidden></div>
+      <nav class="explore-menu" id="explore-menu" aria-label="Explore" hidden>
+        <div class="menu-heading">
+          <span>EXPLORE</span>
+          <button class="menu-close" type="button" aria-label="Close menu">&times;</button>
+        </div>
+        <a class="menu-link" href="./index.html">Home <span aria-hidden="true">&rsaquo;</span></a>
+        <a class="menu-link" href="#research-listings">Research Listings <span aria-hidden="true">&rsaquo;</span></a>
+        <a class="menu-link" href="#profile">Profile <span aria-hidden="true">&rsaquo;</span></a>
+        <a class="menu-link" href="#logout">Log Out <span aria-hidden="true">&rsaquo;</span></a>
+      </nav>
+
+      <main class="home-content">
+        <nav class="navigation-grid" aria-label="Student navigation">
+          <button class="navigation-button" id="profile" type="button">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <circle cx="12" cy="7.5" r="3.5"></circle>
+              <path d="M5 20v-1.5a7 7 0 0 1 14 0V20"></path>
+            </svg>
+            <span>Profile</span>
+          </button>
+          <button class="navigation-button" id="research-listings" type="button">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <circle cx="10.5" cy="10.5" r="6.5"></circle>
+              <path d="m15.5 15.5 5 5"></path>
+            </svg>
+            <span>Research Listings</span>
+          </button>
+          <button class="navigation-button" type="button">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M4 5.5h16v12H9l-5 4v-16Z"></path>
+            </svg>
+            <span>Messaging</span>
+          </button>
+          <button class="navigation-button" type="button">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M10 17l5-5-5-5M15 12H3"></path>
+              <path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"></path>
+            </svg>
+            <span>Log Out</span>
+          </button>
+        </nav>
+      </main>
+    </div>
+    <script src="app.js" defer></script>
+  </body>
+</html>
