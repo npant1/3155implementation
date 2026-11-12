@@ -1,0 +1,63 @@
+@startuml
+title Apply to a Research Opportunity — Persistent Flow
+autonumber
+
+actor Student
+boundary "Opportunity Page" as UI
+control "FastAPI Routes" as API
+control "Application Service" as Service
+database "SQLAlchemy Session" as Session
+database "MySQL" as DB
+
+Student -> UI: Open opportunity
+UI -> API: GET opportunity
+API -> Session: Load published opportunity and professor
+Session -> DB: SELECT opportunity and professor
+DB --> Session: Opportunity details
+Session --> API: Opportunity and professor
+API --> UI: Render details and application form
+UI --> Student: Show opportunity, professor, deadline
+
+Student -> UI: Complete form and submit
+UI -> UI: Validate required application fields
+alt Invalid form
+  UI --> Student: Show field validation errors
+else Valid form
+  UI -> API: POST application with session cookie
+  API -> API: Verify signed session token
+  API -> Session: Load authenticated user
+  Session -> DB: SELECT user by token subject
+  DB --> Session: User role and profile
+  Session --> API: Authenticated student
+  API -> API: Verify student role
+  API -> Service: submitApplication(opportunityId, student, statement)
+  Service -> Session: Check opportunity and existing application
+  Session -> DB: SELECT opportunity and matching application
+  DB --> Session: Current records
+  Session --> Service: Eligibility result
+  alt Opportunity closed, expired, or duplicate
+    Service --> API: Return actionable validation error
+    API --> UI: Return actionable validation error
+    UI --> Student: Show why application cannot be submitted
+  else Eligible
+    Service -> Session: Insert submitted application
+    Session -> DB: INSERT application (unique student/opportunity)
+    DB --> Session: Persisted application
+    Session --> Service: Application ID and submitted status
+    Service --> API: Submission confirmation
+    API --> UI: Submission confirmation
+    UI --> Student: Show success state
+  end
+end
+
+note over API,DB
+The signed, HttpOnly session cookie supplies the student identity;
+never trust a form field for identity. The unique constraint and
+eligibility checks protect persisted applications.
+end note
+
+note over Student,DB
+Local prototype accounts only. Production use requires an approved
+identity provider and an HTTPS deployment with secure cookies.
+end note
+@enduml

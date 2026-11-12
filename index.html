@@ -15,10 +15,45 @@
           <span class="brand-mark" aria-hidden="true">C</span>
           <span>Campus Research</span>
         </a>
-        <span class="student-label">STUDENT PORTAL</span>
+        <div class="header-right">
+          <div class="account-controls">
+            <span id="account-indicator">Sign in to apply</span>
+            <button id="open-login" class="text-button" type="button">Sign in</button>
+            <button id="open-register" class="text-button" type="button">Create account</button>
+            <button id="logout-button" class="text-button" type="button" hidden>Sign out</button>
+          </div>
+          <span class="student-label">STUDENT PORTAL</span>
+        </div>
       </header>
 
+      <dialog id="account-dialog" class="account-dialog" aria-labelledby="account-dialog-title">
+        <div class="dialog-heading">
+          <h2 id="account-dialog-title">Student account</h2>
+          <button id="close-account-dialog" class="dialog-close" type="button" aria-label="Close">×</button>
+        </div>
+        <div class="auth-mode-controls">
+          <button class="auth-mode-button is-active" type="button" data-auth-mode="login">Sign in</button>
+          <button class="auth-mode-button" type="button" data-auth-mode="register">Create account</button>
+        </div>
+        <form id="account-form" class="account-form">
+          <div id="registration-fields" hidden>
+            <label for="account-full-name">Full name</label>
+            <input id="account-full-name" name="full_name" autocomplete="name" minlength="2" maxlength="160" disabled>
+            <label for="account-major">Major or area of study</label>
+            <input id="account-major" name="major" minlength="2" maxlength="160" disabled>
+          </div>
+          <label for="account-email">Email address</label>
+          <input id="account-email" name="email" type="email" autocomplete="email" required>
+          <label for="account-password">Password</label>
+          <input id="account-password" name="password" type="password" autocomplete="current-password" minlength="12" maxlength="128" required>
+          <p id="account-password-help" class="form-help" hidden>Use at least 12 characters for a new account.</p>
+          <button id="account-submit" class="apply-button" type="submit">Sign in</button>
+          <p id="account-message" class="application-status" role="status" aria-live="polite"></p>
+        </form>
+      </dialog>
+
       <main>
+        <p id="api-error" class="api-error" role="status" aria-live="polite"></p>
         <section class="listings-page" aria-labelledby="page-title">
           <div class="page-heading">
             <p class="eyebrow">FIND YOUR NEXT OPPORTUNITY</p>
@@ -53,6 +88,11 @@
             <h2>No opportunities found</h2>
             <p>Try a different search term to see more research listings.</p>
           </div>
+        </section>
+
+        <section id="opportunity-page" class="opportunity-page" aria-labelledby="opportunity-title" hidden>
+          <a class="back-link" href="#">← Back to research listings</a>
+          <div id="opportunity-content"></div>
         </section>
       </main>
 

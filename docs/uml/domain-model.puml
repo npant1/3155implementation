@@ -1,0 +1,172 @@
+@startuml
+title Campus Research — Relational Domain Model
+!pragma layout smetana
+hide methods
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+enum UserRole {
+  student
+  professor
+}
+
+enum OpportunityStatus {
+  draft
+  published
+  closed
+}
+
+enum ApplicationStatus {
+  submitted
+  accepted
+  declined
+}
+
+enum OpportunityBulletType {
+  responsibility
+  goal
+  prerequisite
+}
+
+class User {
+  +id: UUID <<PK>>
+  +email: String <<unique>>
+  +passwordHash: String
+  +role: UserRole
+  +createdAt: DateTime
+}
+
+class StudentProfile {
+  +userId: UUID <<PK, FK>>
+  +fullName: String
+  +major: String
+  +yearInSchool: String
+  +about: Text
+  +photoObjectKey: String
+  +resumeObjectKey: String
+  +resumeFileName: String
+  +updatedAt: DateTime
+}
+
+class ProfessorProfile {
+  +userId: UUID <<PK, FK>>
+  +fullName: String
+  +title: String
+  +department: String
+  +about: Text
+  +photoObjectKey: String
+  +updatedAt: DateTime
+}
+
+class Opportunity {
+  +id: UUID <<PK>>
+  +professorUserId: UUID <<FK>>
+  +title: String
+  +description: Text
+  +duration: String
+  +weeklyHoursMin: Decimal
+  +weeklyHoursMax: Decimal
+  +applicationDeadline: DateTime
+  +status: OpportunityStatus
+  +createdAt: DateTime
+  +updatedAt: DateTime
+  +publishedAt: DateTime
+}
+
+class ResearchArea {
+  +id: UUID <<PK>>
+  +name: String <<unique>>
+}
+
+class OpportunityResearchArea {
+  +opportunityId: UUID <<PK, FK>>
+  +researchAreaId: UUID <<PK, FK>>
+}
+
+class OpportunityBullet {
+  +id: UUID <<PK>>
+  +opportunityId: UUID <<FK>>
+  +type: OpportunityBulletType
+  +text: String
+  +sortOrder: Integer
+}
+
+class Application {
+  +id: UUID <<PK>>
+  +studentUserId: UUID <<FK>>
+  +opportunityId: UUID <<FK>>
+  +interestStatement: Text
+  +status: ApplicationStatus
+  +submittedAt: DateTime
+  +decisionAt: DateTime
+  +decisionReason: Text
+}
+
+class Conversation {
+  +id: UUID <<PK>>
+  +opportunityId: UUID <<FK, nullable>>
+  +createdAt: DateTime
+}
+
+class ConversationParticipant {
+  +conversationId: UUID <<PK, FK>>
+  +userId: UUID <<PK, FK>>
+  +joinedAt: DateTime
+  +lastReadAt: DateTime
+}
+
+class Message {
+  +id: UUID <<PK>>
+  +conversationId: UUID <<FK>>
+  +senderUserId: UUID <<FK>>
+  +body: Text
+  +sentAt: DateTime
+}
+
+User "1" -- "0..1" StudentProfile : student profile
+User "1" -- "0..1" ProfessorProfile : professor profile
+ProfessorProfile "1" -- "0..*" Opportunity : posts
+Opportunity "1" -- "1..*" OpportunityResearchArea
+ResearchArea "1" -- "0..*" OpportunityResearchArea
+Opportunity "1" *-- "0..*" OpportunityBullet : details
+StudentProfile "1" -- "0..*" Application : submits
+Opportunity "1" -- "0..*" Application : receives
+Conversation "1" *-- "2" ConversationParticipant : participants
+User "1" -- "0..*" ConversationParticipant
+Conversation "1" *-- "0..*" Message : contains
+User "1" -- "0..*" Message : sends
+Opportunity "0..1" -- "0..*" Conversation : context
+
+User .. UserRole
+Opportunity .. OpportunityStatus
+Application .. ApplicationStatus
+OpportunityBullet .. OpportunityBulletType
+
+note right of User
+Prototype accounts use Argon2 password hashes.
+Never persist plaintext passwords.
+Role/profile consistency is enforced by account creation logic.
+end note
+
+note right of Application
+Unique(studentUserId, opportunityId): one application per student and opportunity.
+Declined requires decisionReason; final decisions set decisionAt.
+Only published, not-yet-expired opportunities accept applications.
+end note
+
+note bottom of Opportunity
+weeklyHoursMin > 0 and weeklyHoursMax >= weeklyHoursMin.
+Published opportunities require a deadline and at least one research area.
+end note
+
+note bottom of StudentProfile
+Resume and photo files live in private object storage;
+only opaque storage keys are stored in the database.
+end note
+
+note bottom of ConversationParticipant
+Proposed constraint: exactly two users, one student and one professor.
+Every message sender must be a participant in its conversation.
+end note
+
+@enduml

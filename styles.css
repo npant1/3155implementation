@@ -50,6 +50,139 @@ a {
   border-bottom: 1px solid rgba(47, 96, 56, 0.18);
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.account-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #647067;
+  font-size: 10px;
+}
+
+.text-button {
+  padding: 6px 0;
+  border: 0;
+  color: var(--green-dark);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.text-button:hover {
+  text-decoration: underline;
+}
+
+.account-dialog {
+  width: min(440px, calc(100% - 32px));
+  max-width: none;
+  padding: 24px;
+  border: 1px solid #d5dad4;
+  color: #242a25;
+  background: var(--white);
+}
+
+.account-dialog::backdrop {
+  background: rgba(25, 36, 27, 0.48);
+}
+
+.dialog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dialog-heading h2 {
+  margin: 0;
+  color: var(--green-dark);
+  font-size: 19px;
+}
+
+.dialog-close {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.auth-mode-controls {
+  display: flex;
+  gap: 18px;
+  margin: 20px 0 15px;
+  border-bottom: 1px solid var(--line);
+}
+
+.auth-mode-button {
+  padding: 0 0 9px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.auth-mode-button.is-active {
+  border-bottom-color: var(--green);
+  color: var(--green-dark);
+  font-weight: 700;
+}
+
+.account-form,
+.account-form #registration-fields {
+  display: grid;
+  gap: 8px;
+}
+
+.account-form label {
+  margin-top: 5px;
+  color: #38433a;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.account-form input {
+  width: 100%;
+  min-height: 40px;
+  padding: 10px;
+  border: 1px solid #d5dad4;
+  color: #263229;
+  background: var(--white);
+  font-size: 12px;
+}
+
+.account-form input:focus {
+  outline: 2px solid var(--lavender);
+  outline-offset: 1px;
+}
+
+.form-help {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.account-form .application-status {
+  margin-top: 4px;
+}
+
+.api-error {
+  color: #8a2f2f;
+  font-size: 12px;
+}
+
+.api-error:empty {
+  display: none;
+}
+
 .brand {
   display: inline-flex;
   align-items: center;
@@ -213,6 +346,24 @@ h1 {
   background: var(--white);
 }
 
+.card-link {
+  align-self: flex-start;
+  margin-top: 16px;
+  color: var(--green-dark);
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.card-link:hover,
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.card-link span {
+  margin-left: 4px;
+}
+
 .card-topline {
   display: flex;
   align-items: flex-start;
@@ -321,6 +472,196 @@ h1 {
   font-size: 12px;
 }
 
+.opportunity-page {
+  max-width: 930px;
+  margin: 0 auto;
+  padding: 38px 0 58px;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 30px;
+  color: var(--green-dark);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.opportunity-heading {
+  margin-bottom: 26px;
+}
+
+.opportunity-heading h1 {
+  max-width: 720px;
+}
+
+.opportunity-faculty {
+  margin-bottom: 0;
+  color: #59615a;
+  font-size: 13px;
+}
+
+.opportunity-faculty strong {
+  color: var(--green-dark);
+}
+
+.opportunity-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(270px, 0.72fr);
+  align-items: start;
+  gap: 20px;
+}
+
+.opportunity-details,
+.application-panel {
+  padding: 24px;
+  border: 1px solid #e4e7e2;
+  background: var(--white);
+}
+
+.opportunity-details section + section {
+  margin-top: 26px;
+}
+
+.opportunity-details h2,
+.application-panel h2 {
+  margin-bottom: 10px;
+  color: var(--green-dark);
+  font-size: 16px;
+}
+
+.opportunity-details p,
+.application-panel > p {
+  margin-bottom: 0;
+  color: #515951;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.opportunity-bullets {
+  margin: 0;
+  padding-left: 18px;
+  color: #515951;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.opportunity-details .area-tags {
+  margin: 0;
+}
+
+.opportunity-facts {
+  display: grid;
+  gap: 14px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.opportunity-facts div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.opportunity-facts span {
+  color: var(--muted);
+}
+
+.opportunity-facts strong {
+  color: #303a31;
+}
+
+.application-panel h2 {
+  margin-bottom: 6px;
+}
+
+.application-panel > p {
+  margin-bottom: 20px;
+}
+
+.application-auth-prompt {
+  margin: 0 0 16px;
+  padding: 10px;
+  color: #554fbb;
+  background: #f0efff;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.application-form {
+  display: grid;
+  gap: 8px;
+}
+
+.application-form label {
+  margin-top: 5px;
+  color: #38433a;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.application-form input,
+.application-form textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d5dad4;
+  border-radius: 0;
+  color: #263229;
+  background: var(--white);
+  font-size: 12px;
+}
+
+.application-form input:focus,
+.application-form textarea:focus {
+  outline: 2px solid var(--lavender);
+  outline-offset: 1px;
+}
+
+.application-form input[readonly] {
+  color: #58625a;
+  background: #f5f7f4;
+}
+
+.application-form textarea {
+  resize: vertical;
+}
+
+.apply-button {
+  min-height: 42px;
+  margin-top: 8px;
+  border: 0;
+  color: var(--white);
+  background: var(--green);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.apply-button:hover:not(:disabled) {
+  background: var(--green-dark);
+}
+
+.apply-button:disabled {
+  background: #647d68;
+  cursor: default;
+}
+
+.application-note,
+.application-status {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.application-status:not(:empty) {
+  padding: 10px;
+  color: var(--green-dark);
+  background: #eef2ed;
+  font-size: 11px;
+}
+
 .site-footer {
   padding: 16px 0 22px;
   border-top: 1px solid rgba(47, 96, 56, 0.18);
@@ -352,6 +693,17 @@ h1 {
     min-height: 64px;
   }
 
+  .header-right {
+    align-items: flex-end;
+    flex-direction: column-reverse;
+    gap: 3px;
+  }
+
+  .account-controls {
+    gap: 8px;
+    font-size: 9px;
+  }
+
   .listings-page {
     padding: 32px 0 42px;
   }
@@ -376,6 +728,14 @@ h1 {
   }
 
   .listings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .opportunity-page {
+    padding: 30px 0 42px;
+  }
+
+  .opportunity-layout {
     grid-template-columns: 1fr;
   }
 
