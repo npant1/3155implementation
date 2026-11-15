@@ -1,10 +1,8 @@
 # Shared PostgreSQL development database
 
-This branch, `sprint2-database`, supplies the **whole project's** persistence
-foundation. It was created from `npant1/3155implementation` main (`7ebc492`).
-It is independent of `professor-profile`: no existing HTML, CSS, browser
-JavaScript, or professor UI is replaced or connected here. The existing
-research-listings page still displays its original hardcoded sample data.
+The `sprint2-database` branch contains the shared PostgreSQL persistence
+foundation: models, migration history, validation, data-access code,
+synthetic development data, tests, and schema documentation.
 
 ## Stack and scope
 
@@ -15,16 +13,14 @@ research-listings page still displays its original hardcoded sample data.
 - No live authentication provider, HTTP API, frontend integration, file-byte
   storage, production deployment, or production credentials are included.
 
-The application reference is [the team repository](https://github.com/npant1/3155implementation).
-The existing stack was static HTML/CSS/JavaScript; Node/TypeScript is added
-for persistence tooling and a reusable future server layer, without converting
-the frontend to another framework. Prisma was chosen for typed PostgreSQL
-queries and versioned migrations. See [Prisma's PostgreSQL documentation](https://www.prisma.io/docs/orm/v7/core-concepts/supported-databases/postgresql).
+The schema and data requirements follow the team's repository and backlog.
+Prisma provides typed PostgreSQL access and versioned migrations; see
+[Prisma's PostgreSQL documentation](https://www.prisma.io/docs/orm/v7/core-concepts/supported-databases/postgresql).
 
 ## Local setup: isolated cluster
 
 Prerequisites: Git, Python 3.9+, Node.js 24 (see `.nvmrc`), npm, and PostgreSQL
-18.1 binaries. Node is required only for the data layer, not the static pages.
+18.1 binaries. Node runs the Prisma tooling and data-access scripts.
 A lockfile is committed; use `npm ci`, not a fresh dependency upgrade.
 
 ```bash
@@ -101,10 +97,9 @@ configuration change; do not weaken the guards to reach a production server.
 | Conversation | Unique student/professor pair | [#8 messages](https://github.com/npant1/3155implementation/issues/8), #14/#15 |
 | Message | Conversation, participant sender, immutable nonblank body and timestamp | #8 message history |
 
-The previous professor-profile proposal used a separate profile UUID. In this
-shared schema, each profile uses its `userId` as its primary key: there is at
-most one profile of the corresponding role per account, without an extra
-identity to synchronize. This is documented in the schema-derived class UML.
+Each profile uses its `userId` as its primary key, enforcing one role-specific
+profile per account without a second profile identity to synchronize. The
+schema-derived class UML documents the relationships.
 No real faculty/student information from Figma is copied into development data.
 
 ## Constraints and invariants
@@ -166,7 +161,7 @@ capped at 100; cursor pagination remains future work.
 `DataAccessError` uses FORBIDDEN, NOT_FOUND, CONFLICT, and INVALID codes. Zod
 rejects malformed input and unexpected fields. Future handlers must map those
 errors to suitable responses, avoid returning raw database exceptions, and
-preserve unsaved UI input when saving fails. Optimistic profile updates use
+report validation or conflict failures appropriately. Optimistic profile updates use
 an atomic owner/version predicate. Database/storage failures roll back writes.
 
 **Security boundary:** this module is trusted server code, not browser code.
@@ -223,9 +218,8 @@ silently extend it. No fabricated file metadata points to nonexistent uploads.
 
 `npm run db:verify` connects through the actual Prisma adapter, performs a
 transactional create/read/delete of its own temporary records, and runs the
-same published-list query available to future application handlers. This
-verifies application-side connectivity; the current static frontend remains
-unconnected on purpose.
+same published-list query available to future application handlers. This verifies the data-access client and database connection without
+requiring an HTTP server.
 
 ```bash
 npm run db:validate
@@ -251,11 +245,15 @@ The class source is generated from the Prisma schema; tests detect drift.
 The sequence diagram traces `apply` and distinguishes the future caller from
 the implemented data layer. Review the diagram when that workflow changes.
 
+Each member should use their own development/test databases. Feature branches
+with additional migrations should use separate databases rather than advancing
+a database still needed by an earlier schema version.
+
 Assumptions: a user has one role; applications require a student profile but a
 resume is optional; one conversation per student/professor pair is sufficient;
 decisions are final; lists show at most 100 records; file retention/account
 deactivation and archive policy are not specified; login/registration remain
-owned by their features. Deadlines are stored as UTC instants; the UI must
-agree on a timezone when converting Figma's date-only 11:59 PM deadline.
+owned by their features. Deadlines are stored as UTC instants; date-only inputs require an agreed
+timezone before being converted for persistence.
 Professor research interests are free-text labels, while opportunity search
 areas use a shared taxonomy. Team confirmation is needed before production use.

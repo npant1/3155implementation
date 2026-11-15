@@ -8,8 +8,8 @@
 The class diagram is generated directly from `prisma/schema.prisma`, including
 all scalar attributes and declared foreign-key relationships. SQL-only domain
 rules are noted in the diagram and documented in [DATABASE.md](../DATABASE.md).
-The sequence describes the implemented shared data layer; a future authenticated
-caller/UI is deliberately separate. These are not professor UI diagrams.
+The sequence describes the implemented database transaction and data-access
+boundary. Authentication and HTTP integration are outside this database branch.
 
 To regenerate, use Python 3.9+, Java 21+ and the official
 [PlantUML 1.2026.10 JAR](https://github.com/plantuml/plantuml/releases/download/v1.2026.10/plantuml.jar)

@@ -1,221 +1,120 @@
+# Shared PostgreSQL Database
 
-### ITSC 3155 - Software Engineering Implementation
+The `sprint2-database` branch contains the shared development persistence layer
+for Norms Gold Pan: PostgreSQL models, Prisma data access, SQL migrations,
+synthetic seed data, database tests, and UML diagrams.
 
-## Project Overview
+## Technology
 
-Norms Gold Pan is a web application designed to connect college students with professors offering undergraduate research opportunities. Students can discover research opportunities, view information about projects, and interact with faculty.
+- PostgreSQL 18.1
+- Prisma ORM 7.10.1 with the PostgreSQL adapter and `pg`
+- Node.js 24, TypeScript, and Zod validation
+- Python 3.9+ for the optional local-cluster helper and UML checks
 
+Use the Node version in `.nvmrc` and install the committed dependency versions
+with `npm ci`.
 
-## Implemented Feature
+## Database models
 
-### Student Login
+| Model | Purpose |
+| --- | --- |
+| User | Account identity, normalized unique email, external authentication reference, and role |
+| StudentProfile | Student information and owned photo/resume references |
+| ProfessorProfile | Faculty information, research interests, contact fields, and owned photo reference |
+| FileAsset | Private file metadata and ownership; file bytes are stored separately |
+| Opportunity | Research-post details, owner, draft/publication status, hours, and deadline |
+| ResearchArea / OpportunityResearchArea | Research taxonomy and many-to-many post associations |
+| Application | Student/post association, submitted resume reference, decision, and denial reason |
+| Conversation / Message | Student–professor conversation pairs and persistent message history |
 
-The implemented Sprint 1 feature is the Student Login page. This feature allows students to enter their username and password, receive an error message when credentials are incorrect, and access the student portal when valid credentials are provided.
+Foreign keys, uniqueness constraints, checks, and triggers enforce ownership,
+valid roles, file metadata, publication requirements, application decisions,
+message participants, and optimistic profile versions.
 
-The login interface was designed to follow the team's approved Figma prototype.
+## Set up a new local development database
 
-### User Story
-
-**GitHub Issue #1: Student Login**
-
-> As a user, I can login into the student portal.
-
-**Acceptance Criteria:**
-
-- The login interface must be easy to navigate.
-- Users must be able to enter a username and password.
-- Invalid credentials must produce an error message.
-- Valid credentials must redirect the user to the student portal.
-
-**Implementation Tasks:**
-
-- Create the student login button.
-- Create username and password input fields.
-- Implement credential validation.
-- Redirect users to the student portal after successful login.
-
-[View GitHub Issue #1](https://github.com/npant1/3155implementation/issues/1)
-
-## Figma Design
-
-The student login interface was implemented using the team's original Figma prototype as a visual reference.
-
-The design includes username and password fields, a Student Login button, and separate navigation options for professor login and account registration.
-
-[View Student Login Figma Design](https://www.figma.com/proto/d0P8tCCwxmCInTN8C4LEjg/Main?node-id=1-2&t=4esNemZXWSrhdoKD-0&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=1%3A2)
-
-## Technologies Used
-
-- HTML5 for application structure
-- CSS3 for styling and responsive layout
-- JavaScript for login functionality and navigation
-- Git and GitHub for version control
-- Figma for UI/UX design
-
-## Installation and Setup
-
-### Prerequisites
-
-- Git
-- A modern web browser
-- Python 3 (for running a local development server)
-
-### Step 1: Clone the Repository
+Install Node 24, npm, Python 3.9+, and PostgreSQL 18.1 binaries first.
 
 ```bash
-git clone https://github.com/npant1/3155implementation.git
-```
-
-### Step 2: Navigate to the Project
-
-```bash
+git clone --branch sprint2-database https://github.com/npant1/3155implementation.git
 cd 3155implementation
+npm ci
+python3 scripts/local-postgres.py
+npm run db:generate
+npm run db:init
+npm run db:seed
+npm run db:verify
 ```
 
-### Step 3: Select the Student Login Branch
+The helper creates an isolated cluster under ignored `.dev/postgres`, listens
+on `127.0.0.1:55432`, creates `campus_dev` and `campus_test`, and writes generated
+local credentials to ignored `.env`. On macOS it can locate Postgres.app;
+otherwise place PostgreSQL binaries on PATH or pass
+`--bin /path/to/postgresql/bin`.
+
+**Do not create `.env` before running this helper.** It refuses to overwrite
+existing configuration or an unowned cluster. If you already have a local
+development database, skip the helper, copy `.env.example` to `.env`, and set
+`DATABASE_URL` and `TEST_DATABASE_URL` yourself. See the
+[detailed setup instructions](docs/DATABASE.md).
+
+Stop the helper-managed cluster with:
 
 ```bash
-git checkout user-login
+python3 scripts/local-postgres.py --stop
 ```
 
-### Step 4: Run the Application
+Restart it with the original helper command. Stopping does not delete data.
 
-The Student Login implementation uses HTML, CSS, and JavaScript and does not require installing npm dependencies.
+## Commands
 
-Start a local server:
+| Command | Behavior |
+| --- | --- |
+| `npm run db:generate` | Generate the typed Prisma client from the schema |
+| `npm run db:init` | Apply the four committed migrations; does not reset or seed the database |
+| `npm run db:seed` | Create missing synthetic development records without overwriting existing records |
+| `npm run db:verify` | Connect through Prisma, verify transactional write/read/delete, and run a listing query |
+| `npm run db:status` | Compare this branch's migration history with the configured database |
+| `npm run db:validate` | Validate the Prisma schema |
+
+The seed includes fictional student/professor records, a published opportunity,
+a draft, an application, a conversation, and a message. It contains no real
+user information. A sample deadline is set when the post is first created;
+rerunning the seed does not extend it.
+
+## Tests
 
 ```bash
-python3 -m http.server 8000
+npm run lint
+npm run typecheck
+npm test
+npm run test:db
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'test_uml.py' -v
 ```
 
-On Windows, you can also use:
+Integration tests apply migrations to `TEST_DATABASE_URL`, create random
+test-owned records, and clean up those records only. They do not truncate
+shared tables or reset development data. The GitHub Actions workflow uses
+an ephemeral PostgreSQL service.
 
-```bash
-py -m http.server 8000
-```
+## Team configuration and limits
 
-Open a browser and navigate to:
+- Use local development databases only. The supplied tools reject production
+  mode, remote hosts, and database names without a `_dev` or `_test` suffix.
+  Integration tests additionally require a `_test` database.
+- Keep `.env`, credentials, local database files, generated clients, and
+  dependencies out of Git. `.env.example` contains placeholders only.
+- Each member should use their own development/test databases. Use separate
+  databases when switching between feature branches with different migrations.
+- Pull the committed schema, migrations, and lockfile together. Run `npm ci`,
+  `npm run db:generate`, and `npm run db:init` after database changes.
+- Create a new reviewed migration for schema changes; do not edit applied
+  migrations. SQL checks/triggers are part of the schema and must be retained.
+- Data-access functions are trusted server code. They do not authenticate a
+  caller, provide HTTP endpoints, or implement production row-level security.
+- FileAsset stores metadata, not uploaded file contents. Authentication, object
+  storage, production deployment, and interface integration are separate work.
 
-http://localhost:8000
-
-## Feature Demonstration
-
-### Student Login Process
-
-1. Open the application in a browser.
-2. Enter a username and password.
-3. Click the **Student Login** button.
-4. If the credentials are incorrect, an error message appears.
-5. If the credentials are correct, the student is redirected to the student portal.
-6. The student can log out to end the session.
-
-### Demo Credentials
-
-For testing purposes, the application uses the following credentials:
-
-**Username:** `student`
-
-**Password:** `student123`
-
-These are demonstration credentials only and are not intended for production authentication.
-
-## Testing
-
-The Student Login feature can be tested against the original acceptance criteria.
-
-| Acceptance Criteria | Test Procedure | Expected Result |
-|---|---|---|
-| Easy navigation | Open the login page and locate the navigation options | Student, Professor, and Sign Up options are accessible |
-| Username and password entry | Enter text in both login fields | Both fields accept input |
-| Invalid credentials | Enter an incorrect username or password and submit | An error message is displayed |
-| Valid credentials | Enter `student` and `student123` | User is redirected to the student portal |
-| Logout functionality | Log in and click Log out | The session ends and the login page is displayed |
-| Protected student portal | Attempt to open `#/student-portal` without logging in | User is redirected to the login page |
-
-These test cases describe the expected behavior implemented in the prototype. They can be demonstrated manually during the Sprint 1 presentation.
-
-## Sprint Planning
-
-GitHub Issues are used to track user stories, acceptance criteria, and implementation tasks.
-
-**Sprint 1 Feature:** Student Login
-
-**GitHub Issue:** [#1 - Student Login](https://github.com/npant1/3155implementation/issues/1)
-
-The Student Login feature is implemented in the `user-login` branch.
-
-## Version Control
-
-GitHub is used to manage the project source code and track implementation changes.
-
-**Repository:** [3155implementation](https://github.com/npant1/3155implementation)
-
-**Feature Branch:** `user-login`
-
-**Main Branch:** `main`
-
-**Commit History:** [View Student Login Commits](https://github.com/npant1/3155implementation/commits/user-login/)
-
-The feature branch contains the Student Login implementation and its initial development history.
-
-The feature should be reviewed through a pull request before being merged into `main`.
-
-## AI-Assisted Development
-
-AI-assisted development tools can support the implementation process.
-
-**GitHub Copilot**
-
-GitHub Copilot can assist with generating code suggestions, improving JavaScript logic, identifying potential errors, and reviewing code.
-
-**Figma MCP**
-
-Figma MCP can provide design context from the Figma prototype to support implementation of interface elements, layouts, and styling.
-
-
-## Current Limitations
-
-The current Student Login implementation is a front-end prototype.
-
-- Login credentials are predefined for demonstration purposes.
-- No backend authentication service or user database is connected.
-- Session state is stored in the browser using session storage.
-- Professor login and account registration are separate navigation destinations but are not implemented in this feature branch.
-
-Future development can include real authentication, database integration, and additional student and professor functionality.
-
-
-## Project Deliverables
-
-- Student Login implementation
-- Original user story and acceptance criteria
-- Figma design reference
-- GitHub Sprint 1 issue
-- Manual testing procedures
-- Git commit history
-- README documentation
-- Pull request and merge into the main branch
-
-## Research Listings
-
-The research listings prototype displays six sample research opportunities. Students can search by project title, description, faculty, department, or research area, and sort by newest posting, title, or application deadline.
-
-Run the page from the project directory with:
-
-```bash
-python3 -m http.server 8000
-```
-
-Open <http://localhost:8000> in a browser. Listings are prototype data and are not connected to a research API.
-
-[View the Research Listings Figma frame](https://www.figma.com/proto/d0P8tCCwxmCInTN8C4LEjg/Main?node-id=6-5&t=RjfB5uCHilmrC0Kn-0&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=1%3A2)
-
-## Shared PostgreSQL database (Sprint 2)
-
-The independent `sprint2-database` branch adds the whole project's PostgreSQL
-schema, Prisma data-access layer, migrations, synthetic development data,
-automated tests, and UML. It leaves the existing frontend unchanged.
-
-See [database setup and team instructions](docs/DATABASE.md) and
-[rendered UML diagrams](docs/uml/README.md). All supplied database tooling is
-restricted to local development/test databases; no production database is used.
+[Full database guide](docs/DATABASE.md) ·
+[Prisma schema](prisma/schema.prisma) ·
+[Migration SQL](prisma/migrations) · [UML diagrams](docs/uml/README.md)
