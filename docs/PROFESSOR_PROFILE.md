@@ -1,10 +1,8 @@
 # Professor profile — issue #4
 
-Implemented on `professor-profile`, with the shared `sprint2-database` branch
-merged as a dependency. The shared database branch remains independent of UI
-work. Existing student login and browser-local student-profile features are
-preserved. Professor data uses PostgreSQL through the Node API and Prisma,
-not browser storage.
+Implemented on `professor-profile`, using the shared PostgreSQL foundation.
+This guide covers the professor-profile interface, API and persistence.
+Professor data uses the Node API and Prisma rather than browser storage.
 
 ## Run the feature
 
@@ -31,8 +29,9 @@ The synthetic seeded account is Professor Alex Morgan. The sample identity is
 selected by the server, never a request-body owner ID. A random HttpOnly,
 SameSite=Strict cookie identifies the local demo session; writes require the
 same origin. The server binds only to loopback, refuses production mode, and
-only serves allowlisted frontend files. `.env`, database files, uploads,
-source code, and `.git` cannot be downloaded through it.
+only serves allowlisted frontend files. `.env`, database files, raw upload
+paths, backend source files and `.git` cannot be downloaded through it.
+The current profile photo is served through an authenticated API endpoint.
 
 **This is not production authentication.** It is a clearly labeled local
 sample-professor session for the course demonstration. A real authentication
@@ -85,8 +84,9 @@ No schema migration was needed for this feature.
 | GET /api/professor/photo/:id | Current owned photo bytes, no-store |
 | POST /api/professor/logout | Invalidate cookie/session |
 
-Updates increment the profile version atomically. Image metadata, object keys,
-and credentials are not returned in profile DTOs. Old photo objects/metadata
+Updates increment the profile version atomically. Photo DTOs contain only
+the current photo ID and its API URL; private storage keys, original file
+details and database credentials are not returned. Old photo objects/metadata
 are retained privately; automated retention/garbage collection is future work.
 This avoids deleting objects still referenced elsewhere. Local file storage
 is suitable for the development demo, not shared production hosting.
