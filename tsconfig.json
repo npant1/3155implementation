@@ -18,4 +18,15 @@
   },
   "include": ["src", "vite.config.ts"],
   "exclude": ["server", "tests", "generated", "prisma.config.ts"]
+    "target": "ES2023",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true
+  },
+  "include": ["src/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts", "prisma.config.ts"],
+  "exclude": ["node_modules"]
 }

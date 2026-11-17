@@ -1,6 +1,7 @@
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -17,6 +18,15 @@ enum OpportunityStatus {
   CLOSED
 }
 
+enum FilePurpose {
+  PHOTO
+  RESUME
+}
+enum OpportunityStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
 enum ApplicationStatus {
   PENDING
   ACCEPTED
@@ -93,4 +103,157 @@ model Application {
 
   @@unique([studentId, opportunityId])
   @@index([opportunityId, status])
+  id               String   @id @default(uuid()) @db.Uuid
+  email            String   @unique @db.VarChar(254)
+  authSubject      String?  @unique @db.VarChar(255)
+  role             UserRole
+  createdAt        DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(3)
+  studentProfile   StudentProfile?
+  professorProfile ProfessorProfile?
+  files            FileAsset[]
+  messages         Message[]
+  decisions        Application[] @relation("DecisionMaker")
+}
+
+model FileAsset {
+  id           String      @id @default(uuid()) @db.Uuid
+  ownerId      String      @db.Uuid
+  storageKey   String      @unique @db.VarChar(512)
+  originalName String      @db.VarChar(255)
+  mediaType    String      @db.VarChar(100)
+  sizeBytes    Int
+  purpose      FilePurpose
+  createdAt    DateTime    @default(now()) @db.Timestamptz(3)
+  owner        User        @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  studentPhotos StudentProfile[] @relation("StudentPhoto")
+  studentResumes StudentProfile[] @relation("StudentResume")
+  professorPhotos ProfessorProfile[] @relation("ProfessorPhoto")
+  applicationResumes Application[] @relation("ApplicationResume")
+  @@unique([id, ownerId])
+  @@index([ownerId])
+}
+
+model StudentProfile {
+  userId        String    @id @db.Uuid
+  displayName   String    @db.VarChar(80)
+  major         String    @db.VarChar(100)
+  concentration String?   @db.VarChar(100)
+  year          String    @db.VarChar(20)
+  about         String    @default("") @db.VarChar(1000)
+  photoId       String?   @db.Uuid
+  resumeId      String?   @db.Uuid
+  version       Int       @default(1)
+  updatedAt     DateTime  @updatedAt @db.Timestamptz(3)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  photo         FileAsset? @relation("StudentPhoto", fields: [photoId, userId], references: [id, ownerId], onDelete: Restrict)
+  resume        FileAsset? @relation("StudentResume", fields: [resumeId, userId], references: [id, ownerId], onDelete: Restrict)
+  applications  Application[]
+  conversations Conversation[]
+}
+
+model ProfessorProfile {
+  userId           String    @id @db.Uuid
+  displayName      String    @db.VarChar(80)
+  degree           String    @default("") @db.VarChar(200)
+  department       String    @default("") @db.VarChar(120)
+  education        String    @default("") @db.VarChar(2000)
+  about            String    @default("") @db.VarChar(5000)
+  researchAreas    String[] @default([])
+  contactEmail     String?   @db.VarChar(254)
+  virtualOfficeUrl String?   @db.VarChar(2048)
+  officeHours      String    @default("") @db.VarChar(500)
+  photoId          String?   @db.Uuid
+  version          Int       @default(1)
+  updatedAt        DateTime  @updatedAt @db.Timestamptz(3)
+  user             User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  photo            FileAsset? @relation("ProfessorPhoto", fields: [photoId, userId], references: [id, ownerId], onDelete: Restrict)
+  opportunities    Opportunity[]
+  conversations    Conversation[]
+}
+
+model ResearchArea {
+  id            String @id @default(uuid()) @db.Uuid
+  name          String @unique @db.VarChar(100)
+  opportunities OpportunityResearchArea[]
+}
+
+model Opportunity {
+  id               String @id @default(uuid()) @db.Uuid
+  professorId      String @db.Uuid
+  title            String @db.VarChar(200)
+  description      String @default("") @db.Text
+  responsibilities String[] @default([])
+  goals            String[] @default([])
+  prerequisites    String[] @default([])
+  duration         String? @db.VarChar(200)
+  hoursMin         Int?
+  hoursMax         Int?
+  deadline         DateTime? @db.Timestamptz(3)
+  status           OpportunityStatus @default(DRAFT)
+  publishedAt      DateTime? @db.Timestamptz(3)
+  createdAt        DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(3)
+  professor        ProfessorProfile @relation(fields: [professorId], references: [userId], onDelete: Restrict)
+  researchAreas    OpportunityResearchArea[]
+  applications     Application[]
+  @@index([professorId, status])
+  @@index([status, deadline])
+}
+
+model OpportunityResearchArea {
+  opportunityId String @db.Uuid
+  researchAreaId String @db.Uuid
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  researchArea ResearchArea @relation(fields: [researchAreaId], references: [id], onDelete: Restrict)
+  @@id([opportunityId, researchAreaId])
+  @@index([researchAreaId])
+}
+
+model Application {
+  id            String @id @default(uuid()) @db.Uuid
+  studentId     String @db.Uuid
+  opportunityId String @db.Uuid
+  resumeFileId  String? @db.Uuid
+  status        ApplicationStatus @default(PENDING)
+  denialReason  String? @db.VarChar(2000)
+  decidedById   String? @db.Uuid
+  decidedAt     DateTime? @db.Timestamptz(3)
+  appliedAt     DateTime @default(now()) @db.Timestamptz(3)
+  student       StudentProfile @relation(fields: [studentId], references: [userId], onDelete: Restrict)
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Restrict)
+  resume        FileAsset? @relation("ApplicationResume", fields: [resumeFileId, studentId], references: [id, ownerId], onDelete: Restrict)
+  decidedBy     User? @relation("DecisionMaker", fields: [decidedById], references: [id], onDelete: Restrict)
+  @@unique([studentId, opportunityId])
+  @@index([opportunityId, status])
+  @@index([resumeFileId, studentId])
+}
+
+model Conversation {
+  lastMessageAt DateTime @default(now()) @db.Timestamptz(3)
+  id          String @id @default(uuid()) @db.Uuid
+  studentId   String @db.Uuid
+  professorId String @db.Uuid
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  student     StudentProfile @relation(fields: [studentId], references: [userId], onDelete: Restrict)
+  professor   ProfessorProfile @relation(fields: [professorId], references: [userId], onDelete: Restrict)
+  messages    Message[]
+  @@unique([studentId, professorId])
+  @@index([studentId, lastMessageAt])
+  @@index([professorId, lastMessageAt])
+  @@index([professorId])
+}
+
+model Message {
+  clientMessageId String? @db.Uuid
+  id             String @id @default(uuid()) @db.Uuid
+  conversationId String @db.Uuid
+  senderId       String @db.Uuid
+  body           String @db.VarChar(5000)
+  sentAt         DateTime @default(now()) @db.Timestamptz(3)
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Restrict)
+  sender         User @relation(fields: [senderId], references: [id], onDelete: Restrict)
+  @@unique([senderId, clientMessageId])
+  @@index([conversationId, sentAt, id])
+  @@index([senderId])
 }

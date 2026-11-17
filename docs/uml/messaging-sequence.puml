@@ -1,0 +1,53 @@
+@startuml
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam sequenceMessageAlign center
+title Student/professor messaging — implemented send and history flow
+actor "Signed-in student\nor professor" as Person
+boundary "messaging.js" as UI
+control "Messaging API\nLocal demo session" as API
+control "createMessagingAccess(db)" as DAL
+database PostgreSQL as DB
+Person -> UI: Select a peer / conversation
+UI -> API: GET conversations/:id/messages
+API -> API: Validate HttpOnly session; derive actor ID
+API -> DAL: history(actorId, conversationId, cursor?)
+DAL -> DB: Verify actor has profile and belongs to conversation
+alt Not a participant
+  DAL --> API: FORBIDDEN
+  API --> UI: 403; no history disclosed
+else Participant
+  DAL -> DB: Read ordered messages, 50 per page
+  DB --> DAL: Messages + older-page flag
+  DAL --> API: Conversation peer and history
+  API --> UI: Render history and Load older control
+end
+Person -> UI: Write message and select Send
+UI -> UI: Keep draft; generate/reuse clientMessageId
+UI -> API: POST conversations/:id/messages\nbody + clientMessageId
+API -> API: Verify host, origin, session and JSON limit
+API -> DAL: send(session.actorId, conversationId, payload)
+DAL -> DB: Verify conversation membership
+DAL -> DAL: Validate nonblank text, <= 5000 characters, UUID
+alt Unauthorized / invalid
+  DAL --> API: FORBIDDEN / validation error
+  API --> UI: 403 / 422; preserve draft
+else Valid
+  DAL -> DB: UPSERT unique(senderId, clientMessageId)\nCreate immutable message if absent
+  DB -> DB: Trigger verifies participant sender\nand updates conversation.lastMessageAt on insert
+  alt Same ID previously used with different text/conversation
+    DAL --> API: CONFLICT
+    API --> UI: 409; preserve draft
+  else First send or exact retry
+    DB --> DAL: One committed message
+    DAL --> API: Message
+    API --> UI: Render escaped message; clear matching draft
+  end
+end
+note over UI,DB
+  Lost acknowledgements retain the draft and retry identifier.
+  An exact retry returns the existing row without duplicating it.
+  Visible chats poll every 4 seconds; older history is paged.
+  Sessions are local development demos, not production authentication.
+end note
+@enduml
