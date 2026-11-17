@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client"
+  output   = "../generated/prisma"
   output   = "../src/generated/prisma"
 }
 
@@ -11,6 +12,12 @@ enum UserRole {
   STUDENT
   PROFESSOR
 }
+
+enum OpportunityStatus {
+  OPEN
+  CLOSED
+}
+
 enum FilePurpose {
   PHOTO
   RESUME
@@ -27,6 +34,75 @@ enum ApplicationStatus {
 }
 
 model User {
+  id               String            @id @default(uuid()) @db.Uuid
+  email            String            @unique
+  passwordHash     String
+  role             UserRole
+  createdAt        DateTime          @default(now())
+  studentProfile   StudentProfile?
+  professorProfile ProfessorProfile?
+}
+
+model StudentProfile {
+  userId        String        @id @db.Uuid
+  fullName      String
+  major         String?
+  concentration String?
+  academicYear  String?
+  about         String?       @db.Text
+  avatarUrl     String?
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume        Resume?
+  applications  Application[]
+}
+
+model ProfessorProfile {
+  userId        String                @id @db.Uuid
+  fullName      String
+  contactEmail  String?
+  phone         String?
+  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  opportunities ResearchOpportunity[]
+}
+
+model ResearchOpportunity {
+  id           String            @id @default(uuid()) @db.Uuid
+  professorId  String            @db.Uuid
+  title        String
+  description  String            @db.Text
+  areaOfStudy  String
+  status       OpportunityStatus @default(OPEN)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  professor    ProfessorProfile  @relation(fields: [professorId], references: [userId], onDelete: Restrict)
+  applications Application[]
+
+  @@index([status, areaOfStudy])
+}
+
+model Resume {
+  id          String         @id @default(uuid()) @db.Uuid
+  studentId   String         @unique @db.Uuid
+  storageKey  String         @unique
+  fileName    String
+  contentType String
+  uploadedAt  DateTime       @default(now())
+  student     StudentProfile @relation(fields: [studentId], references: [userId], onDelete: Cascade)
+}
+
+model Application {
+  id             String              @id @default(uuid()) @db.Uuid
+  studentId      String              @db.Uuid
+  opportunityId  String              @db.Uuid
+  status         ApplicationStatus   @default(PENDING)
+  submittedAt    DateTime            @default(now())
+  decidedAt      DateTime?
+  decisionReason String?             @db.Text
+  student        StudentProfile      @relation(fields: [studentId], references: [userId], onDelete: Restrict)
+  opportunity    ResearchOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Restrict)
+
+  @@unique([studentId, opportunityId])
+  @@index([opportunityId, status])
   id               String   @id @default(uuid()) @db.Uuid
   email            String   @unique @db.VarChar(254)
   authSubject      String?  @unique @db.VarChar(255)

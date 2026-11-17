@@ -1,4 +1,52 @@
 @startuml
+title Sprint 2 - Apply to a research opportunity
+hide footbox
+autonumber
+skinparam shadowing false
+skinparam sequence {
+  ArrowColor #355070
+  LifeLineBorderColor #78909C
+  LifeLineBackgroundColor #F7F9FC
+  ParticipantBorderColor #355070
+  ParticipantBackgroundColor #EAF0F7
+  BoxBorderColor #78909C
+}
+
+actor Student
+boundary "Research Listings UI" as UI
+control "Application Service" as Service
+entity "Application Repository" as Repository
+database "Relational Database" as DB
+
+Student -> UI: Select opportunity and choose Apply
+UI -> Service: apply(opportunityId)
+Service -> Service: Resolve authenticated student identity
+Service -> Repository: findByStudentAndOpportunity(studentId, opportunityId)
+Repository -> DB: SELECT application by student and opportunity
+DB --> Repository: Existing application or none
+Repository --> Service: Existing application or none
+
+alt Already applied
+  Service --> UI: Conflict - application already exists
+  UI --> Student: Show existing application state
+else No existing application
+  Service -> Repository: findOpenOpportunity(opportunityId)
+  Repository -> DB: SELECT opportunity and status
+  DB --> Repository: Opportunity
+  Repository --> Service: Opportunity
+  alt Opportunity is closed or missing
+    Service --> UI: Reject - opportunity is unavailable
+    UI --> Student: Show unavailable message
+  else Opportunity is open
+    Service -> Service: Validate student profile and application rules
+    Service -> Repository: createPending(studentId, opportunityId)
+    Repository -> DB: INSERT pending application
+    DB --> Repository: Persisted application
+    Repository --> Service: Saved application
+    Service --> UI: Application submitted
+    UI --> Student: Show confirmation
+  end
+end
 skinparam shadowing false
 skinparam backgroundColor white
 skinparam sequenceMessageAlign center

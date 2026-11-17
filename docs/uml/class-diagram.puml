@@ -1,0 +1,94 @@
+@startuml
+title Sprint 2 - Proposed persistent data model
+hide circle
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam class {
+  BackgroundColor #F7F9FC
+  BorderColor #355070
+  ArrowColor #355070
+}
+
+enum UserRole {
+  STUDENT
+  PROFESSOR
+}
+
+enum OpportunityStatus {
+  OPEN
+  CLOSED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+class User {
+  +id: UUID
+  +email: String {unique}
+  +passwordHash: String
+  +role: UserRole
+  +createdAt: DateTime
+}
+
+class StudentProfile {
+  +userId: UUID {PK, FK}
+  +fullName: String
+  +major: String?
+  +concentration: String?
+  +academicYear: String?
+  +about: String?
+  +avatarUrl: String?
+}
+
+class ProfessorProfile {
+  +userId: UUID {PK, FK}
+  +fullName: String
+  +contactEmail: String?
+  +phone: String?
+}
+
+class ResearchOpportunity {
+  +id: UUID
+  +professorId: UUID {FK}
+  +title: String
+  +description: String
+  +areaOfStudy: String
+  +status: OpportunityStatus
+  +createdAt: DateTime
+  +updatedAt: DateTime
+}
+
+class Resume {
+  +id: UUID
+  +studentId: UUID {FK, unique}
+  +storageKey: String
+  +fileName: String
+  +contentType: String
+  +uploadedAt: DateTime
+}
+
+class Application {
+  +id: UUID
+  +studentId: UUID {FK}
+  +opportunityId: UUID {FK}
+  +status: ApplicationStatus
+  +submittedAt: DateTime
+  +decidedAt: DateTime?
+  +decisionReason: String?
+}
+
+note right of Application
+Unique(studentId, opportunityId)
+Declined requires a non-empty decisionReason
+end note
+
+User "1" -- "0..1" StudentProfile : student account
+User "1" -- "0..1" ProfessorProfile : professor account
+ProfessorProfile "1" -- "0..*" ResearchOpportunity : posts
+StudentProfile "1" -- "0..1" Resume : current resume
+StudentProfile "1" -- "0..*" Application : submits
+ResearchOpportunity "1" -- "0..*" Application : receives
+@enduml

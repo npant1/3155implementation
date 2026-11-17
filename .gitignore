@@ -1,4 +1,10 @@
 node_modules/
+dist/
+*.tsbuildinfo
+generated/
+.env
+.env.*
+!.env.example
 src/generated/
 dist/
 coverage/

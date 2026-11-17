@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["server/**/*.ts", "prisma.config.ts", "prisma.generate.config.ts"],
+  "exclude": ["node_modules", "generated"]
+}
