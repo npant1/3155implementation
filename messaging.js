@@ -1,5 +1,6 @@
 let messagingEpoch = 0;
 let messagingTimer;
+const messagingApp = document.querySelector('#app');
 window.addEventListener('hashchange', () => { messagingEpoch += 1; clearInterval(messagingTimer); });
 const messageEscape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 async function messagingApi(path, options = {}) {
@@ -15,12 +16,12 @@ async function renderMessaging() {
   clearInterval(messagingTimer);
   const epoch = ++messagingEpoch;
   const current = () => epoch === messagingEpoch && location.hash === '#/messages';
-  app.innerHTML = '<main id="main-content" class="messaging-loading" role="status">Loading messages…</main>';
+  messagingApp.innerHTML = '<main id="main-content" class="messaging-loading" role="status">Loading messages…</main>';
   let user;
   try { ({ user } = await messagingApi('me')); }
   catch (error) {
     if (!current()) return;
-    app.innerHTML = `<main id="main-content" class="msg-entry"><p class="eyebrow">CAMPUS RESEARCH</p><h1>Messages</h1><p>Connect students and professors around research opportunities.</p>
+    messagingApp.innerHTML = `<main id="main-content" class="msg-entry"><p class="eyebrow">CAMPUS RESEARCH</p><h1>Messages</h1><p>Connect students and professors around research opportunities.</p>
       <a class="msg-applicants" href="/applicants.html">Professor applicant review demo</a>
       <p class="msg-demo">Local development demo. Choose a synthetic sample account; production authentication is not configured.</p>
       <button data-message-role="STUDENT">Continue as sample student</button><button data-message-role="PROFESSOR">Continue as sample professor</button>
@@ -37,7 +38,7 @@ async function renderMessaging() {
   const state = { tab: 'inbox', query: '', conversations: [], people: [], selected: null, messages: [], inboxMore: false, peopleMore: false, older: false, drafts: new Map(), pending: new Map(), sending: new Set(), listSerial: 0, chatSerial: 0, chatLoading: false, polling: false };
   const noun = user.role === 'STUDENT' ? 'Professors' : 'Students';
   const initials = name => name.split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase();
-  app.innerHTML = `<div class="messages-app"><header class="msg-header"><div><h1>Messages</h1><a href="#/messages" id="msg-back">Back</a></div><p>Connect with research ${noun.toLowerCase()}</p><a class="msg-applicants" href="/applicants.html">Professor applicant review demo</a></header>
+  messagingApp.innerHTML = `<div class="messages-app"><header class="msg-header"><div><h1>Messages</h1><a href="#/messages" id="msg-back">Back</a></div><p>Connect with research ${noun.toLowerCase()}</p><a class="msg-applicants" href="/applicants.html">Professor applicant review demo</a></header>
     <main id="main-content" class="msg-main"><form class="msg-search" role="search"><span class="msg-search-icon" aria-hidden="true"><img src="assets/messaging/f783a.svg" alt=""><img src="assets/messaging/850ca.svg" alt=""></span><label class="visually-hidden" for="msg-query">Search ${noun.toLowerCase()} or research topics</label><input id="msg-query" maxlength="100" type="search" placeholder="Search ${noun.toLowerCase()} or research topics" autocomplete="off"></form>
     <nav class="msg-tabs" aria-label="Message views"><button id="msg-inbox-tab" aria-pressed="true">Inbox</button><button id="msg-people-tab" aria-pressed="false">Find ${noun}</button></nav>
     <div class="msg-list-heading"><h2 id="msg-list-title">Conversations</h2><span id="msg-list-count"></span></div><div id="msg-list" aria-labelledby="msg-list-title"></div>
@@ -232,3 +233,15 @@ async function renderMessaging() {
     finally { state.polling = false; }
   }, 4000);
 }
+
+function renderMessagingRoute() {
+  if (!messagingApp) return;
+  if (location.hash !== '#/messages') {
+    location.replace('#/messages');
+    return;
+  }
+  void renderMessaging();
+}
+
+window.addEventListener('hashchange', renderMessagingRoute);
+renderMessagingRoute();

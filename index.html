@@ -1,13 +1,253 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Students and professors can find research contacts, send messages, and view conversation history.">
-    <title>Messages | Campus Research</title>
-    <link rel="stylesheet" href="messaging.css">
-    <script src="messaging.js" defer></script>
-    <script src="app.js" defer></script>
+    <meta name="theme-color" content="#2f6038">
+    <title>Student Home | Campus Research</title>
+    <link rel="stylesheet" href="styles.css">
   </head>
-  <body><a class="skip-link" href="#main-content">Skip to messages</a><div id="app"></div><noscript>Please enable JavaScript to use messages.</noscript></body>
+  <body>
+    <div class="student-app">
+      <header class="top-bar">
+        <button class="menu-button" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="explore-menu">
+          <img src="assets/figma-menu.svg" alt="">
+        </button>
+        <label class="search-control">
+          <span class="visually-hidden">Search research listings by keyword or area of study</span>
+          <input id="listing-search" type="search" placeholder="SEARCH BY KEYWORD OR AREA" autocomplete="off" aria-label="Search research listings by keyword or area of study" aria-controls="listing-results">
+        </label>
+      </header>
+
+      <div class="menu-backdrop" hidden></div>
+      <nav class="explore-menu" id="explore-menu" aria-label="Explore" hidden>
+        <div class="menu-heading">
+          <span>EXPLORE</span>
+          <button class="menu-close" type="button" aria-label="Close menu">&times;</button>
+        </div>
+        <a class="menu-link" href="#home">Home <span aria-hidden="true">&rsaquo;</span></a>
+        <a class="menu-link" href="#research-listings">Research Listings <span aria-hidden="true">&rsaquo;</span></a>
+        <a class="menu-link" href="#profile">Profile <span aria-hidden="true">&rsaquo;</span></a>
+        <a class="menu-link" href="#logout">Log Out <span aria-hidden="true">&rsaquo;</span></a>
+      </nav>
+
+      <main>
+        <section class="home-content" id="home-screen" aria-label="Student home">
+          <nav class="navigation-grid" aria-label="Student navigation">
+            <button class="navigation-button" id="open-profile" type="button">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <circle cx="12" cy="7.5" r="3.5"></circle>
+                <path d="M5 20v-1.5a7 7 0 0 1 14 0V20"></path>
+              </svg>
+              <span>Profile</span>
+            </button>
+            <button class="navigation-button" id="research-listings" type="button">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <circle cx="10.5" cy="10.5" r="6.5"></circle>
+                <path d="m15.5 15.5 5 5"></path>
+              </svg>
+              <span>Research Listings</span>
+            </button>
+            <button class="navigation-button" type="button">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M4 5.5h16v12H9l-5 4v-16Z"></path>
+              </svg>
+              <span>Messaging</span>
+            </button>
+            <button class="navigation-button" type="button">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M10 17l5-5-5-5M15 12H3"></path>
+                <path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"></path>
+              </svg>
+              <span>Log Out</span>
+            </button>
+          </nav>
+        </section>
+
+        <section class="listings-screen" id="listings-screen" aria-labelledby="listings-heading" hidden>
+          <div class="listings-toolbar">
+            <button class="toolbar-button" id="back-home" type="button">Back</button>
+            <label class="area-filter">
+              <span class="visually-hidden">Filter by area of study</span>
+              <select id="area-filter" aria-label="Filter by area of study">
+                <option value="">All Areas</option>
+              </select>
+            </label>
+          </div>
+          <div class="listings-content">
+            <h1 class="visually-hidden" id="listings-heading">Research Listings</h1>
+            <p class="results-status" id="results-status" role="status" aria-live="polite"></p>
+            <div class="listing-results" id="listing-results">
+              <a class="listing-card listing-link" href="#opportunity-1" data-area="General Research" data-search="opportunity 1 academia rich experience">
+                <h2>Opportunity 1</h2>
+                <p>This opportunity provides rich experience for the field of academia.</p>
+                <span class="listing-area">General Research</span>
+                <span class="listing-open-hint">View opportunity details <span aria-hidden="true">&rsaquo;</span></span>
+              </a>
+              <article class="listing-card" data-area="Computer Science, Robotics, Artificial Intelligence" data-search="opportunity 2 computer vision robotics ai models human reality infer conclusions">
+                <h2>Opportunity 2: Computer Vision for Robotics</h2>
+                <p>How can we make AI models interpret human reality to then infer and form conclusions?</p>
+                <span class="listing-area">Computer Science · Robotics · Artificial Intelligence</span>
+              </article>
+              <article class="listing-card" data-area="Artificial Intelligence, Computer Science" data-search="opportunity 3 multi-modal ai vision language model accuracy context">
+                <h2>Opportunity 3: Multi-modal AI (Vision + Language)</h2>
+                <p>How can we make a vision model more accurate with additional context?</p>
+                <span class="listing-area">Artificial Intelligence · Computer Science</span>
+              </article>
+              <article class="listing-card" data-area="Artificial Intelligence, Computer Science" data-search="opportunity 4 making ai models smaller faster optimize compute output">
+                <h2>Opportunity 4: Making AI Models Smaller and Faster</h2>
+                <p>How can we optimize AI models for the lowest compute and fastest output?</p>
+                <span class="listing-area">Artificial Intelligence · Computer Science</span>
+              </article>
+              <article class="listing-card" data-area="Artificial Intelligence, Computer Science" data-search="opportunity 5 autonomous ai agents reliable completing tasks user approval">
+                <h2>Opportunity 5: Autonomous AI Agents</h2>
+                <p>How reliable can autonomous AI agents be at completing tasks without user approval?</p>
+                <span class="listing-area">Artificial Intelligence · Computer Science</span>
+              </article>
+              <article class="listing-card" data-area="Artificial Intelligence, Data Science" data-search="opportunity 6 ai powered campus dining optimization scalability predict demand reduce wait times food availability">
+                <h2>Opportunity 6: AI-Powered Campus Dining Optimization</h2>
+                <p>Research how AI can address scalability, predict dining demand, reduce wait times, and improve food availability.</p>
+                <span class="listing-area">Artificial Intelligence · Data Science</span>
+              </article>
+              <article class="listing-card" data-area="Artificial Intelligence, Data Science, Transportation" data-search="opportunity 7 machine learning parking availability congestion efficiency unc charlotte">
+                <h2>Opportunity 7: Campus Parking Optimization</h2>
+                <p>Research how machine learning can predict parking availability, reduce congestion, and improve parking efficiency at UNC Charlotte.</p>
+                <span class="listing-area">Artificial Intelligence · Data Science · Transportation</span>
+              </article>
+            </div>
+            <p class="no-results" id="no-results" hidden>No research listings matched your search. Try another keyword or area of study.</p>
+          </div>
+        </section>
+
+        <section class="opportunity-screen" id="opportunity-screen" aria-labelledby="opportunity-heading" hidden>
+          <div class="opportunity-toolbar">
+            <button class="toolbar-button" id="back-listings" type="button">Back</button>
+          </div>
+          <div class="opportunity-content">
+            <h1 id="opportunity-heading">Opportunity 1</h1>
+            <article class="opportunity-details">
+              <section aria-labelledby="description-heading">
+                <h2 id="description-heading">Description</h2>
+                <p>This opportunity provides rich experiences for the field of academia. In this opportunity, you will be researching about academia research and will be the best researcher possible. We at this opportunity love research and empower students with research and academia.</p>
+              </section>
+              <section class="professor-contact" id="professor-contact" aria-labelledby="contact-heading">
+                <h2 id="contact-heading" tabindex="-1">Contact Info</h2>
+                <address>
+                  <span>Real Teacher</span>
+                  <a href="mailto:realteacher@charlotte.edu">realteacher@charlotte.edu</a>
+                  <a href="tel:1234567890">123-456-7890</a>
+                </address>
+              </section>
+            </article>
+            <div class="opportunity-actions">
+              <button class="secondary-action" id="professor-profile" type="button">Professor Profile</button>
+              <button class="apply-button" id="apply-button" type="button">Apply</button>
+            </div>
+            <p class="application-status" id="application-status" role="status" aria-live="polite"></p>
+            <section class="members-section" aria-labelledby="members-heading">
+              <h2 id="members-heading">Members</h2>
+              <ul class="member-list">
+                <li class="member-card"><span class="member-avatar" aria-hidden="true"></span><span>College Student Smith</span></li>
+                <li class="member-card"><span class="member-avatar" aria-hidden="true"></span><span>College C. Student</span></li>
+                <li class="member-card"><span class="member-avatar" aria-hidden="true"></span><span>Emily Evans</span></li>
+                <li class="member-card"><span class="member-avatar" aria-hidden="true"></span><span>Carlos Cernan</span></li>
+              </ul>
+            </section>
+          </div>
+        </section>
+
+        <section class="profile-screen" id="profile-screen" aria-labelledby="profile-heading" hidden>
+          <div class="profile-toolbar">
+            <button class="toolbar-button" id="back-profile" type="button">Back</button>
+            <button class="toolbar-button profile-edit-toggle" id="edit-profile" type="button" aria-expanded="false" aria-controls="profile-edit-form">Edit Profile</button>
+          </div>
+          <div class="profile-content">
+            <h1 id="profile-heading" tabindex="-1">Emily Evans</h1>
+            <div class="profile-overview">
+              <label class="profile-photo-picker" for="profile-photo-input">
+                <img id="profile-photo" src="assets/figma-profile-photo.png" alt="Emily Evans profile picture">
+                <span class="profile-photo-placeholder" id="profile-photo-placeholder" aria-hidden="true" hidden>EE</span>
+                <span class="visually-hidden">Upload or change profile picture</span>
+                <input class="visually-hidden" id="profile-photo-input" type="file" accept="image/*" aria-label="Upload or change profile picture">
+              </label>
+              <div class="profile-facts" aria-label="Student information">
+                <p><strong>Major:</strong> <span id="profile-major"></span></p>
+                <p><strong>Concentration:</strong> <span id="profile-concentration"></span></p>
+                <p><strong>Year:</strong> <span id="profile-year"></span></p>
+              </div>
+            </div>
+
+            <form class="profile-edit-form" id="profile-edit-form" hidden>
+              <label>
+                Name
+                <input id="edit-name" name="name" type="text" autocomplete="name" required maxlength="80">
+              </label>
+              <label>
+                Major
+                <input id="edit-major" name="major" type="text" required maxlength="80">
+              </label>
+              <label>
+                Concentration
+                <input id="edit-concentration" name="concentration" type="text" maxlength="80">
+              </label>
+              <label>
+                Year in school
+                <select id="edit-year" name="year" required>
+                  <option value="Freshman">Freshman</option>
+                  <option value="Sophomore">Sophomore</option>
+                  <option value="Junior">Junior</option>
+                  <option value="Senior">Senior</option>
+                  <option value="Graduate">Graduate</option>
+                </select>
+              </label>
+              <label class="profile-about-edit">
+                About me
+                <textarea id="edit-about" name="about" rows="4" maxlength="500"></textarea>
+              </label>
+              <div class="profile-form-actions">
+                <button class="toolbar-button" type="submit">Save Changes</button>
+                <button class="profile-cancel-button" id="cancel-profile-edit" type="button">Cancel</button>
+              </div>
+            </form>
+
+            <p class="profile-status" id="profile-status" role="status" aria-live="polite"></p>
+
+            <section class="profile-about" aria-labelledby="about-heading">
+              <h2 id="about-heading">About Me</h2>
+              <p id="profile-about"></p>
+            </section>
+
+            <section class="resume-section" aria-labelledby="resume-heading">
+              <h2 class="visually-hidden" id="resume-heading">Resume</h2>
+              <label class="resume-upload" for="resume-input">
+                <span class="upload-icon" aria-hidden="true">
+                  <svg viewBox="0 0 48 48" focusable="false">
+                    <path d="M24 31V4m0 0L13 15M24 4l11 11M7 29v12h34V29"></path>
+                  </svg>
+                </span>
+                <span class="resume-upload-button">
+                  <img src="assets/figma-upload-button.svg" alt="">
+                  <span>Upload Resume</span>
+                </span>
+                <input class="visually-hidden" id="resume-input" type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" aria-label="Upload resume">
+              </label>
+              <div class="resume-file" id="resume-file" hidden>
+                <span id="resume-filename"></span>
+                <button class="profile-cancel-button" id="download-resume" type="button">Download</button>
+                <button class="profile-cancel-button" id="remove-resume" type="button">Remove</button>
+              </div>
+              <p class="resume-status" id="resume-status" role="status" aria-live="polite"></p>
+            </section>
+
+            <section class="applied-listings" aria-labelledby="applied-heading">
+              <h2 id="applied-heading">Applied Listings</h2>
+              <p class="empty-applications" id="empty-applications">You haven't applied to any research listings yet.</p>
+              <ul class="applied-list" id="applied-list"></ul>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="app.js" defer></script>
+  </body>
 </html>
